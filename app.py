@@ -15,7 +15,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # 카카오 API 키 설정
 KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
-KAKAO_JAVASCRIPT_KEY = os.getenv("KAKAO_JAVASCRIPT_KEY")
+KAKAO_JAVASCRIPT_KEY = os.getenv("KAKAO_JAVASCRIPT_API_KEY")
 
 # 날씨 도구 정의
 weather_tool = WeatherTool()
