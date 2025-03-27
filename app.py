@@ -171,52 +171,19 @@ if not KAKAO_REST_API_KEY or not KAKAO_JAVASCRIPT_KEY:
 else:
     # 카카오맵 HTML
     st.markdown(f"""
-    <iframe id="mapFrame" style="width:100%;height:400px;border:none;" src="about:blank"></iframe>
+    <div id="map" style="width:100%;height:400px;"></div>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
     <script>
-    function initMap() {{
-        console.log('맵 초기화 시작');
-        var iframe = document.getElementById('mapFrame');
-        if (!iframe) {{
-            console.error('iframe을 찾을 수 없습니다.');
-            return;
-        }}
-        
-        var mapHtml = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>카카오맵</title>
-                <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
-            </head>
-            <body style="margin:0;padding:0;">
-                <div id="map" style="width:100%;height:100%;"></div>
-                <script>
-                    var container = document.getElementById('map');
-                    var options = {{
-                        center: new kakao.maps.LatLng(37.5665, 126.9780),
-                        level: 3
-                    }};
-                    var map = new kakao.maps.Map(container, options);
-                    var marker = new kakao.maps.Marker({{
-                        map: map,
-                        position: new kakao.maps.LatLng(37.5665, 126.9780)
-                    }});
-                </script>
-            </body>
-            </html>
-        `;
-        
-        iframe.srcdoc = mapHtml;
-        console.log('카카오맵 초기화 완료');
-    }}
-
-    // DOM이 로드된 후 맵 초기화
-    if (document.readyState === 'loading') {{
-        document.addEventListener('DOMContentLoaded', initMap);
-    }} else {{
-        initMap();
-    }}
+    var container = document.getElementById('map');
+    var options = {{
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 3
+    }};
+    var map = new kakao.maps.Map(container, options);
+    var marker = new kakao.maps.Marker({{
+        map: map,
+        position: new kakao.maps.LatLng(37.5665, 126.9780)
+    }});
     </script>
     """, unsafe_allow_html=True)
 
@@ -239,36 +206,16 @@ if search_query:
             # 지도 중심 이동을 위한 JavaScript
             st.markdown(f"""
             <script>
-            var iframe = document.getElementById('mapFrame');
-            if (iframe) {{
-                var mapHtml = `
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta charset="utf-8">
-                        <title>카카오맵</title>
-                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
-                    </head>
-                    <body style="margin:0;padding:0;">
-                        <div id="map" style="width:100%;height:100%;"></div>
-                        <script>
-                            var container = document.getElementById('map');
-                            var options = {{
-                                center: new kakao.maps.LatLng({location['y']}, {location['x']}),
-                                level: 3
-                            }};
-                            var map = new kakao.maps.Map(container, options);
-                            var marker = new kakao.maps.Marker({{
-                                map: map,
-                                position: new kakao.maps.LatLng({location['y']}, {location['x']})
-                            }});
-                        </script>
-                    </body>
-                    </html>
-                `;
-                iframe.srcdoc = mapHtml;
-                console.log('지도 중심 이동 완료');
-            }}
+            var container = document.getElementById('map');
+            var options = {{
+                center: new kakao.maps.LatLng({location['y']}, {location['x']}),
+                level: 3
+            }};
+            var map = new kakao.maps.Map(container, options);
+            var marker = new kakao.maps.Marker({{
+                map: map,
+                position: new kakao.maps.LatLng({location['y']}, {location['x']})
+            }});
             </script>
             """, unsafe_allow_html=True)
         else:
