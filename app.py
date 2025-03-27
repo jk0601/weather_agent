@@ -162,7 +162,7 @@ st.markdown("""
 # 카카오맵 HTML
 st.markdown(f"""
 <div id="map" style="width:100%;height:400px;"></div>
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_API_KEY}&libraries=services"></script>
+<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_API_KEY}&libraries=services"></script>
 <script>
 var container = document.getElementById('map');
 var options = {{
@@ -176,6 +176,11 @@ var geocoder = new kakao.maps.services.Geocoder();
 var marker = new kakao.maps.Marker({{
     map: map,
     position: new kakao.maps.LatLng(37.5665, 126.9780)
+}});
+
+// 지도 로드 완료 이벤트
+kakao.maps.event.addListenerOnce(map, 'tilesloaded', function() {{
+    console.log('지도 로드 완료');
 }});
 </script>
 """, unsafe_allow_html=True)
