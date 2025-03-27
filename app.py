@@ -169,7 +169,8 @@ else:
     <div id="map" style="width:100%;height:400px;"></div>
     <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
     <script>
-    window.onload = function() {{
+    function initMap() {{
+        console.log('맵 초기화 시작');
         var container = document.getElementById('map');
         if (!container) {{
             console.error('맵 컨테이너를 찾을 수 없습니다.');
@@ -192,10 +193,18 @@ else:
             }});
             
             console.log('카카오맵 초기화 완료');
+            window.map = map;  // 전역 변수로 저장
         }} catch (error) {{
             console.error('카카오맵 초기화 실패:', error);
         }}
-    }};
+    }}
+
+    // DOM이 로드된 후 맵 초기화
+    if (document.readyState === 'loading') {{
+        document.addEventListener('DOMContentLoaded', initMap);
+    }} else {{
+        initMap();
+    }}
     </script>
     """, unsafe_allow_html=True)
 
@@ -218,14 +227,19 @@ if search_query:
             # 지도 중심 이동을 위한 JavaScript
             st.markdown(f"""
             <script>
-            var lat = {location['y']};
-            var lng = {location['x']};
-            var moveLatLng = new kakao.maps.LatLng(lat, lng);
-            map.setCenter(moveLatLng);
-            var marker = new kakao.maps.Marker({{
-                map: map,
-                position: moveLatLng
-            }});
+            if (window.map) {{
+                var lat = {location['y']};
+                var lng = {location['x']};
+                var moveLatLng = new kakao.maps.LatLng(lat, lng);
+                window.map.setCenter(moveLatLng);
+                var marker = new kakao.maps.Marker({{
+                    map: window.map,
+                    position: moveLatLng
+                }});
+                console.log('지도 중심 이동 완료');
+            }} else {{
+                console.error('지도가 초기화되지 않았습니다.');
+            }}
             </script>
             """, unsafe_allow_html=True)
         else:
