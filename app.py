@@ -151,6 +151,11 @@ st.set_page_config(
     layout="wide"
 )
 
+# CSP 헤더 추가
+st.markdown("""
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://dapi.kakao.com https://*.kakao.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://dapi.kakao.com https://*.kakao.com; style-src 'self' 'unsafe-inline';">
+""", unsafe_allow_html=True)
+
 # 앱 제목
 st.title("🌤️ 날씨 AI 도우미")
 
@@ -166,37 +171,44 @@ if not KAKAO_REST_API_KEY or not KAKAO_JAVASCRIPT_KEY:
 else:
     # 카카오맵 HTML
     st.markdown(f"""
-    <div id="map" style="width:100%;height:400px;"></div>
-    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
+    <iframe id="mapFrame" style="width:100%;height:400px;border:none;" src="about:blank"></iframe>
     <script>
     function initMap() {{
         console.log('맵 초기화 시작');
-        var container = document.getElementById('map');
-        if (!container) {{
-            console.error('맵 컨테이너를 찾을 수 없습니다.');
+        var iframe = document.getElementById('mapFrame');
+        if (!iframe) {{
+            console.error('iframe을 찾을 수 없습니다.');
             return;
         }}
         
-        var options = {{
-            center: new kakao.maps.LatLng(37.5665, 126.9780),
-            level: 3
-        }};
+        var mapHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>카카오맵</title>
+                <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
+            </head>
+            <body style="margin:0;padding:0;">
+                <div id="map" style="width:100%;height:100%;"></div>
+                <script>
+                    var container = document.getElementById('map');
+                    var options = {{
+                        center: new kakao.maps.LatLng(37.5665, 126.9780),
+                        level: 3
+                    }};
+                    var map = new kakao.maps.Map(container, options);
+                    var marker = new kakao.maps.Marker({{
+                        map: map,
+                        position: new kakao.maps.LatLng(37.5665, 126.9780)
+                    }});
+                </script>
+            </body>
+            </html>
+        `;
         
-        try {{
-            var map = new kakao.maps.Map(container, options);
-            var geocoder = new kakao.maps.services.Geocoder();
-            
-            // 초기 마커 생성
-            var marker = new kakao.maps.Marker({{
-                map: map,
-                position: new kakao.maps.LatLng(37.5665, 126.9780)
-            }});
-            
-            console.log('카카오맵 초기화 완료');
-            window.map = map;  // 전역 변수로 저장
-        }} catch (error) {{
-            console.error('카카오맵 초기화 실패:', error);
-        }}
+        iframe.srcdoc = mapHtml;
+        console.log('카카오맵 초기화 완료');
     }}
 
     // DOM이 로드된 후 맵 초기화
@@ -227,18 +239,35 @@ if search_query:
             # 지도 중심 이동을 위한 JavaScript
             st.markdown(f"""
             <script>
-            if (window.map) {{
-                var lat = {location['y']};
-                var lng = {location['x']};
-                var moveLatLng = new kakao.maps.LatLng(lat, lng);
-                window.map.setCenter(moveLatLng);
-                var marker = new kakao.maps.Marker({{
-                    map: window.map,
-                    position: moveLatLng
-                }});
+            var iframe = document.getElementById('mapFrame');
+            if (iframe) {{
+                var mapHtml = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <title>카카오맵</title>
+                        <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
+                    </head>
+                    <body style="margin:0;padding:0;">
+                        <div id="map" style="width:100%;height:100%;"></div>
+                        <script>
+                            var container = document.getElementById('map');
+                            var options = {{
+                                center: new kakao.maps.LatLng({location['y']}, {location['x']}),
+                                level: 3
+                            }};
+                            var map = new kakao.maps.Map(container, options);
+                            var marker = new kakao.maps.Marker({{
+                                map: map,
+                                position: new kakao.maps.LatLng({location['y']}, {location['x']})
+                            }});
+                        </script>
+                    </body>
+                    </html>
+                `;
+                iframe.srcdoc = mapHtml;
                 console.log('지도 중심 이동 완료');
-            }} else {{
-                console.error('지도가 초기화되지 않았습니다.');
             }}
             </script>
             """, unsafe_allow_html=True)
