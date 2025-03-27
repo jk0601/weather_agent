@@ -14,7 +14,8 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # 카카오 API 키 설정
-KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
+KAKAO_REST_API_KEY = os.getenv("KAKAO_REST_API_KEY")
+KAKAO_JAVASCRIPT_KEY = os.getenv("KAKAO_JAVASCRIPT_KEY")
 
 # 날씨 도구 정의
 weather_tool = WeatherTool()
@@ -159,37 +160,50 @@ st.markdown("""
 원하는 지역의 날씨에 대해 질문해보세요!
 """)
 
-# 카카오맵 HTML
-st.markdown(f"""
-<div id="map" style="width:100%;height:400px;"></div>
-<script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_API_KEY}&libraries=services"></script>
-<script>
-var container = document.getElementById('map');
-var options = {{
-    center: new kakao.maps.LatLng(37.5665, 126.9780),
-    level: 3
-}};
-var map = new kakao.maps.Map(container, options);
-var geocoder = new kakao.maps.services.Geocoder();
-
-// 초기 마커 생성
-var marker = new kakao.maps.Marker({{
-    map: map,
-    position: new kakao.maps.LatLng(37.5665, 126.9780)
-}});
-
-// 지도 로드 완료 이벤트
-kakao.maps.event.addListenerOnce(map, 'tilesloaded', function() {{
-    console.log('지도 로드 완료');
-}});
-</script>
-""", unsafe_allow_html=True)
+# 카카오 API 키 확인
+if not KAKAO_REST_API_KEY or not KAKAO_JAVASCRIPT_KEY:
+    st.error("카카오 API 키가 설정되지 않았습니다. .env 파일에 KAKAO_REST_API_KEY와 KAKAO_JAVASCRIPT_KEY를 설정해주세요.")
+else:
+    # 카카오맵 HTML
+    st.markdown(f"""
+    <div id="map" style="width:100%;height:400px;"></div>
+    <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JAVASCRIPT_KEY}&libraries=services"></script>
+    <script>
+    window.onload = function() {{
+        var container = document.getElementById('map');
+        if (!container) {{
+            console.error('맵 컨테이너를 찾을 수 없습니다.');
+            return;
+        }}
+        
+        var options = {{
+            center: new kakao.maps.LatLng(37.5665, 126.9780),
+            level: 3
+        }};
+        
+        try {{
+            var map = new kakao.maps.Map(container, options);
+            var geocoder = new kakao.maps.services.Geocoder();
+            
+            // 초기 마커 생성
+            var marker = new kakao.maps.Marker({{
+                map: map,
+                position: new kakao.maps.LatLng(37.5665, 126.9780)
+            }});
+            
+            console.log('카카오맵 초기화 완료');
+        }} catch (error) {{
+            console.error('카카오맵 초기화 실패:', error);
+        }}
+    }};
+    </script>
+    """, unsafe_allow_html=True)
 
 # 지역 검색
 search_query = st.text_input("지역을 검색하세요:", key="location_search")
 if search_query:
     # 카카오 API를 사용하여 지역 검색
-    headers = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
+    headers = {"Authorization": f"KakaoAK {KAKAO_REST_API_KEY}"}
     url = f"https://dapi.kakao.com/v2/local/search/address.json?query={search_query}"
     response = requests.get(url, headers=headers)
     
