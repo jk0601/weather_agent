@@ -282,4 +282,4 @@ st.sidebar.markdown("""
 
 # 푸터
 st.sidebar.markdown("---")
-st.sidebar.markdown("© 2023 날씨 AI 도우미") 
+st.sidebar.markdown("© 2025 날씨 AI 도우미") 
